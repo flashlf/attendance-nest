@@ -1,15 +1,16 @@
 import {
   Controller,
   Get,
-  Headers,
+  Req,
   HttpException,
   HttpStatus,
+  Body,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 
 @Controller('/attendance')
 export class AttendanceController {
-  constructor() { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
   @Get('/validation')
   async attendanceValidation(@Req() req: Request) {
@@ -17,26 +18,31 @@ export class AttendanceController {
     const empId = user.empId;
     const today = new Date().toISOString().slice(0, 10);
 
-    const attdExist = await this.AttendanceService.findByEmpIdAndDate(
-      empId,
-      today,
-    );
+    try {
+      await this.attendanceService.validateAttendance(empId, today);
+      return { status: true, message: 'OK', data: null };
+    } catch (err) {
+      throw err;
+    }
+  }
 
-    if (!attdExist) {
-      return {
-        status: true,
-        message: 'OK',
-        data: null,
-      };
+  @Post('/in')
+  async checkIn(@Req() req: Request, @Body() dto: CheckInDto) {
+    const user = req.user as any;
+    const empId = user.empId;
+
+    try {
+      const attendance = await this.attendanceService.checkIn(empId, dto);
+      return { status: true, message: 'OK', data: attendance };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+
+      throw new HttpException(
+        { status: false, message: 'Internal Server Error ', data: null },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
 
-    throw new HttpException(
-      status: false,
-      message: 'Already Checked In',
-      data: attdExist,
-      },
-      HttpStatus.FORBIDDEN,
-    );
-  return;
-}
+  }
+  
 }

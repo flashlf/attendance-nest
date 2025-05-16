@@ -27,4 +27,4 @@ import { AttendanceModule } from './attendance/attendance.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
