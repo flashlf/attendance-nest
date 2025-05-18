@@ -6,15 +6,18 @@ import {
   HttpException,
   HttpStatus,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { Request } from 'express';
 import { CheckInDto } from './dto/check-in.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('/attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('/validation')
   async attendanceValidation(@Req() req: Request) {
     const user = req.user as any;
@@ -29,6 +32,7 @@ export class AttendanceController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/in')
   async checkIn(@Req() req: Request, @Body() dto: CheckInDto) {
     const user = req.user as any;
@@ -47,6 +51,7 @@ export class AttendanceController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/out')
   async checkOut(@Req() req: Request, @Body() dto: CheckInDto) {
     const user = req.user as any;

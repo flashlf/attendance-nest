@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttendanceModule } from './attendance/attendance.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AttendanceModule } from './attendance/attendance.module';
       inject: [ConfigService],
     }),
     AttendanceModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

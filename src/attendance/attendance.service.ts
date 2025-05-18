@@ -53,7 +53,7 @@ export class AttendanceService {
     return this.attdModel.save(attd);
   }
 
-  async checkOut(empId: string, dto: CheckInDto) {  
+  async checkOut(empId: string, dto: CheckInDto) {
     const now = moment().tz(dto.timezone);
     const today = now.format('YYYY-MM-DD');
     const timeStr = now.format('HH:mm:ss');
@@ -64,7 +64,7 @@ export class AttendanceService {
 
     if (!attendance) {
       throw new HttpException(
-        { status: false, message: 'You haven\'t Checked In', data: null },
+        { status: false, message: "You haven't Checked In", data: null },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -97,6 +97,6 @@ export class AttendanceService {
     return {
       attendance,
       detail,
-    }
+    };
   }
 }
