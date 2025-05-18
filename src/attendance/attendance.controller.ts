@@ -1,5 +1,6 @@
 import {
   Controller,
+  Post,
   Get,
   Req,
   HttpException,
@@ -7,6 +8,8 @@ import {
   Body,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
+import { Request } from 'express';
+import { CheckInDto } from './dto/check-in.dto';
 
 @Controller('/attendance')
 export class AttendanceController {
@@ -42,7 +45,26 @@ export class AttendanceController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
   }
-  
+
+  @Post('/out')
+  async checkOut(@Req() req: Request, @Body() dto: CheckInDto) {
+    const user = req.user as any;
+    const empId = user.empId;
+
+    try {
+      const result = await this.attendanceService.checkOut(empId, dto);
+      return {
+        status: true,
+        message: 'Success',
+        data: result,
+      };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        { status: false, message: 'Internal Server Error', data: null },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
