@@ -8,6 +8,6 @@ async function bootstrap() {
 
   // Enable config from .env file
   const confService = app.get(ConfigService);
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen((confService.get('PORT') || process.env.PORT) ?? 3000);
 }
 bootstrap();

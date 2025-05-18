@@ -1,16 +1,16 @@
 import {
   Entity,
-  PrimaryColumn,
   Column,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { AttendanceEntity } from './attendance.entity';
 
 @Entity('attd_types')
 export class AttdTypeEntity {
-  @PrimaryColumn('text')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 20, nullable: true })

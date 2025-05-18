@@ -51,6 +51,7 @@ export class AttdConfirmationRequestEntity {
     type: 'enum',
     enum: FlagLocation,
     nullable: true,
+    enumName: 'flag_location',
   })
   flagLocation: FlagLocation;
 

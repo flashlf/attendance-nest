@@ -27,7 +27,7 @@ export class AttendanceDetailEntity {
   @JoinColumn({ name: 'attd_id' })
   attendance: AttendanceEntity;
 
-  @Column({ type: 'enum', enum: InOut, nullable: true })
+  @Column({ type: 'enum', enum: InOut, nullable: true, enumName: 'inout_type' })
   inout: InOut;
 
   @Column({ type: 'time', nullable: true })
@@ -44,6 +44,7 @@ export class AttendanceDetailEntity {
     type: 'enum',
     enum: FlagLocation,
     nullable: true,
+    enumName: 'flag_location',
   })
   flagLocation: FlagLocation;
 

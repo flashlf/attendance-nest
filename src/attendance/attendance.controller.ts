@@ -15,12 +15,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('/attendance')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(private readonly attendanceService: AttendanceService) { }
 
   @UseGuards(JwtAuthGuard)
   @Get('/validation')
   async attendanceValidation(@Req() req: Request) {
     const user = req.user as any;
+    console.info(req.user);
     const empId = user.empId;
     const today = new Date().toISOString().slice(0, 10);
 

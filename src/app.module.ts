@@ -17,9 +17,11 @@ import { AuthModule } from './auth/auth.module';
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
+        database: configService.get<string>('DB_NAME'),
+        schema: configService.get<string>('DB_SCHEMA'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        logging: ['query', 'error'],
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
@@ -29,4 +31,4 @@ import { AuthModule } from './auth/auth.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
