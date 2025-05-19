@@ -1,8 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CheckInDto } from './dto/check-in.dto';
+import { AttendanceQueryDto } from './dto/attendance-quey.dto';
 import { v4 as uuidv4 } from 'uuid';
 import * as moment from 'moment-timezone';
 import { AttendanceDetailEntity } from './entities/attendance-detail.entity';
@@ -21,6 +27,39 @@ export class AttendanceService {
     date: string,
   ): Promise<AttendanceEntity | null> {
     return this.attdModel.findOne({ where: { empId, date } });
+  }
+
+  async findAllAttendance(params: AttendanceQueryDto & { empId: string }) {
+    const { q, order_by, direction, page, limit, empId } = params;
+
+    const where: any = { empId };
+    if (q) {
+      where.remarksIn = Like(`%${q}%`);
+    }
+
+    const orderField = order_by ?? 'date';
+    const sortDirection = (direction ?? 'asc').toUpperCase() as 'ASC' | 'DESC';
+
+    const [data, total] = await this.attdModel.findAndCount({
+      where,
+      order: { [orderField]: sortDirection },
+      skip: ((page ?? 1) - 1) * (limit ?? 10),
+      take: limit,
+    });
+
+    return {
+      status: true,
+      message: 'Success',
+      data: {
+        items: data,
+        meta: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / (limit ?? 10)),
+        },
+      },
+    };
   }
 
   async validateAttendance(empId: string, date: string): Promise<void> {
@@ -46,11 +85,30 @@ export class AttendanceService {
       date: today,
       startTime: timeStr,
       description: dto.description,
+      flagLocation: 'wfo',
       latitude: dto.latitude,
       longitude: dto.longitude,
     });
+    const savedAttendance = await this.attdModel.save(attd);
 
-    return this.attdModel.save(attd);
+    const detail = this.detailsModel.create({
+      id: uuidv4(),
+      attdId: savedAttendance.id,
+      inout: 'in',
+      time: timeStr,
+      remarks: dto.description,
+      source: 'mobile', // ?? source ntar darimana ya?
+      sourceReference: null,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+      flagLocation: 'wfo',
+      createdAt: new Date(),
+      createdBy: empId,
+    });
+
+    await this.detailsModel.save(detail);
+
+    return savedAttendance;
   }
 
   async checkOut(empId: string, dto: CheckInDto) {
@@ -70,10 +128,10 @@ export class AttendanceService {
     }
 
     const outDetails = await this.detailsModel.count({
-      where: { attdId: attendance.id, inout: 'OUT' },
+      where: { attdId: attendance.id, inout: 'out' },
     });
 
-    if (outDetails > 3) {
+    if (outDetails >= 3) {
       throw new HttpException(
         { status: false, message: 'Already checked out 3 times', data: null },
         HttpStatus.FORBIDDEN,
@@ -83,7 +141,7 @@ export class AttendanceService {
     const detail = this.detailsModel.create({
       id: uuidv4(),
       attdId: attendance.id,
-      inout: 'OUT',
+      inout: 'out',
       time: timeStr,
       source: 'mobile', // ?? source ntar darimana ya?
       sourceReference: null,
@@ -98,5 +156,26 @@ export class AttendanceService {
       attendance,
       detail,
     };
+  }
+
+  async getAttendanceDetail(empId: string, attendanceId: string) {
+    const attendance = await this.attdModel.findOne({
+      where: { id: attendanceId },
+    });
+
+    if (!attendance) {
+      throw new NotFoundException({
+        status: false,
+        message: 'Attendance not found',
+        data: null,
+      });
+    }
+
+    const details = await this.detailsModel.find({
+      where: { attdId: attendanceId },
+      order: { time: 'ASC' },
+    });
+
+    return { attendance, details };
   }
 }

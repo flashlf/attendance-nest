@@ -11,20 +11,20 @@ import {
 import { AttendanceEntity, FlagLocation } from './attendance.entity';
 
 export enum InOut {
-  IN = 'IN',
-  OUT = 'OUT',
+  IN = 'in',
+  OUT = 'out',
 }
 
-@Entity('attendance_details')
+@Entity('attd_details')
 export class AttendanceDetailEntity {
   @PrimaryColumn('text')
   id: string;
 
-  @Column({ name: 'attd_id', type: 'text', nullable: true })
+  @Column({ name: 'attendance_id', type: 'text', nullable: true })
   attdId: string;
 
   @ManyToOne(() => AttendanceEntity, (a) => a.id)
-  @JoinColumn({ name: 'attd_id' })
+  @JoinColumn({ name: 'attendance_id' })
   attendance: AttendanceEntity;
 
   @Column({ type: 'enum', enum: InOut, nullable: true, enumName: 'inout_type' })
@@ -32,6 +32,15 @@ export class AttendanceDetailEntity {
 
   @Column({ type: 'time', nullable: true })
   time: string;
+
+  @Column({ name: 'latitude', type: 'text', nullable: false })
+  latitude: string;
+
+  @Column({ name: 'longitude', type: 'text', nullable: false })
+  longitude: string;
+
+  @Column({ name: 'remarks', type: 'text', nullable: true })
+  remarks: string;
 
   @Column({ type: 'text', nullable: true })
   source: string;

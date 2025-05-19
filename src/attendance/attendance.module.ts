@@ -19,4 +19,4 @@ import { AttdConfirmationRequestEntity } from './entities/attd-confirmation-requ
   providers: [AttendanceService],
   controllers: [AttendanceController],
 })
-export class AttendanceModule { }
+export class AttendanceModule {}

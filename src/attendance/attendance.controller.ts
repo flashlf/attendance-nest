@@ -7,21 +7,23 @@ import {
   HttpStatus,
   Body,
   UseGuards,
+  Param,
+  Query,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { Request } from 'express';
 import { CheckInDto } from './dto/check-in.dto';
+import { AttendanceQueryDto } from './dto/attendance-quey.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('/attendance')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('/validation')
+  @Get('validation')
   async attendanceValidation(@Req() req: Request) {
     const user = req.user as any;
-    console.info(req.user);
     const empId = user.empId;
     const today = new Date().toISOString().slice(0, 10);
 
@@ -34,11 +36,13 @@ export class AttendanceController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/in')
+  @Post('in')
   async checkIn(@Req() req: Request, @Body() dto: CheckInDto) {
     const user = req.user as any;
     const empId = user.empId;
 
+    console.info(empId);
+    console.info(dto);
     try {
       const attendance = await this.attendanceService.checkIn(empId, dto);
       return { status: true, message: 'OK', data: attendance };
@@ -53,7 +57,7 @@ export class AttendanceController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/out')
+  @Post('out')
   async checkOut(@Req() req: Request, @Body() dto: CheckInDto) {
     const user = req.user as any;
     const empId = user.empId;
@@ -69,6 +73,42 @@ export class AttendanceController {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
         { status: false, message: 'Internal Server Error', data: null },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async findAll(@Req() req: Request, @Query() query: AttendanceQueryDto) {
+    const user = req.user as any;
+    const empId = user?.empId;
+    return this.attendanceService.findAllAttendance({ ...query, empId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async getDetailsById(@Req() req: Request, @Param('id') id: string) {
+    const user = req.user as any;
+    const empId = user.empId;
+    try {
+      const result = await this.attendanceService.getAttendanceDetail(
+        empId,
+        id,
+      );
+      return {
+        status: true,
+        message: 'Success',
+        data: result,
+      };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        {
+          status: false,
+          message: `Internal Server Error`,
+          data: null,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
